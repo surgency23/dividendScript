@@ -1,62 +1,39 @@
-let standardDividend = .05;
-let monthlyReturn = 0.00;
-let monthlyContribution = 500.00;
-let principal = 0.00;
-let stockPrice = 8;
-let shares = 0;
-let monthsInvested = 0;
+function retireMentCalculator(desiredRetirementAge, birthday) {
+    const moment = require('moment');
+    let standardDividend = .05;
+    let monthlyReturn = 0.00;
+    let monthlyContribution = 500.00;
+    let principal = 0;
+    let stockPrice = 7.66// this is the average price of GUT since its inception every quarter. 
+    let shares = 0;
+    let monthsInvested = 0;
+    birthday = moment(birthday);
+    let today = moment();
+    let currentAgeInMonths = (today.diff(birthday, "months"));
+    let currentAge = (today.diff(birthday, "months") / 12).toString().replace(/\.\d+/, "");
+    let monthsToRetire = (desiredRetirementAge - currentAgeInMonths / 12) * 12;
+    let stats = [];
+    let totalInvested = 0;
 
-while(monthsInvested <= 416){
-    if(monthsInvested >= 360){
-        principal += (monthlyContribution+1500)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
+    while (monthsInvested <= monthsToRetire) {
+        let newObj = {};
+        switch (currentAge >= 50) {
+            case true:
+                monthlyContribution = 7000 / 12
+            default:
+                totalInvested+=monthlyContribution
+                principal += monthlyContribution + monthlyReturn;
+                shares = principal / stockPrice;
+                monthlyReturn = standardDividend * shares;
+                monthsInvested++;
+                newObj.age = currentAge
+                newObj.currentPrincipal = principal.toFixed(2);
+                stats.push(newObj);
+                today = today.add(1, "months")
+                currentAge = (today.diff(birthday, "months") / 12).toString().replace(/\.\d+/, "");
+                break;
+        }
     }
-    else if(monthsInvested >= 300){
-        principal += (monthlyContribution+1250)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    else if(monthsInvested >= 240){
-        principal += (monthlyContribution+1000)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    else if(monthsInvested >= 180){
-        principal += (monthlyContribution+750)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    else if(monthsInvested >= 120){
-        principal += (monthlyContribution+500)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    else if(monthsInvested >= 60){
-        principal += (monthlyContribution+250)+monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    else{
-        principal += monthlyContribution + monthlyReturn;
-        shares = principal/stockPrice;
-        monthlyReturn = standardDividend*shares;
-        monthsInvested++;
-    }
-    
+    return {"Total Shares":shares.toFixed(2),"Monthly Dividend":  monthlyReturn.toFixed(2), "Total Principal": principal.toFixed(2),"Total Invested":totalInvested.toFixed(2),"Stats":stats}
 }
-Number.prototype.format = function(){
-    return this.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
- };
- console.log(shares.format())
-console.log(`this is month ${monthsInvested}`);
-console.log(`${shares.toFixed(3)} total shares`);
-console.log(`$${monthlyReturn.toFixed(2)} monthly dividend return`);
-console.log(`$${principal.toFixed(2)} total principal`);
-
+console.log(retireMentCalculator(60,"07/26/1993"));
