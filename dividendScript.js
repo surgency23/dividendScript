@@ -1,11 +1,10 @@
-function retireMentCalculator(desiredRetirementAge, birthday) {
+function retireMentCalculator(desiredRetirementAge, birthday,principal) {
     const moment = require('moment');
     let standardDividend = .05;
     let monthlyReturn = 0.00;
     let monthlyContribution = 500.00;
-    let principal = 0;
-    let stockPrice = 7.66// this is the average price of GUT since its inception every quarter. 
-    let shares = 0;
+    let stockPrice = 7.66// this is the average price of GUT since its inception every quarter.
+    let shares = principal/stockPrice
     let monthsInvested = 0;
     birthday = moment(birthday);
     let today = moment();
@@ -19,13 +18,16 @@ function retireMentCalculator(desiredRetirementAge, birthday) {
         let newObj = {};
         switch (currentAge >= 50) {
             case true:
-                monthlyContribution = 7000 / 12
+                standardDividend = .06;
+                monthlyContribution = 7000/12;
             default:
-                totalInvested+=monthlyContribution
-                principal += monthlyContribution + monthlyReturn;
-                shares = principal / stockPrice;
-                monthlyReturn = standardDividend * shares;
+                totalInvested += monthlyContribution;
+                principal += monthlyContribution+monthlyReturn;
+                shares += (monthlyContribution+monthlyReturn)/stockPrice;
+                
+                monthlyReturn = standardDividend*shares;
                 monthsInvested++;
+                
                 newObj.age = currentAge
                 newObj.currentPrincipal = principal.toFixed(2);
                 stats.push(newObj);
@@ -34,6 +36,6 @@ function retireMentCalculator(desiredRetirementAge, birthday) {
                 break;
         }
     }
-    return {"Total Shares":shares.toFixed(2),"Monthly Dividend":  monthlyReturn.toFixed(2), "Total Principal": principal.toFixed(2),"Total Invested":totalInvested.toFixed(2),"Stats":stats}
+    return {"Total Shares":shares.toFixed(2),"Monthly Dividend":  monthlyReturn.toFixed(2), "Total Principal": principal.toFixed(),"Total Invested":totalInvested.toFixed(2)/*,"Stats":stats*/}
 }
-console.log(retireMentCalculator(60,"07/26/1993"));
+retireMentCalculator(65,"07/26/1993",14000);
