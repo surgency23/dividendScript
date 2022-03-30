@@ -9,13 +9,9 @@ function retirementDateCalc(desiredAge, birthday) {
     let day = d.getDate();
     return new Date(year + desiredAge, month, day);
 }
-const monthNames = ["January", "February", "March", "April", "May", "June",
-    "July", "August", "September", "October", "November", "December"
-];
-
-function getLongMonthName(monthIndex) {
-    return monthNames[monthIndex];
-}
+function format (numberStr){
+    return numberStr.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
+ };
 
 function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, currentAccountBalance) {
     //calculating date objects to figure out how many months left to retire, how old we currently are in years and in months
@@ -25,6 +21,7 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
     let currentAge = (Math.floor(currentAgeInMonths / 12));
     let retirementDate = retirementDateCalc(desiredRetirementAge, birthday);
     let monthsLeftUntillRetirement = monthDifference(today, retirementDate);
+    let yearsLeftToRetire = Math.ceil(monthsLeftUntillRetirement/12)
     let currentDate = new Date(today);
     let monthsInvested = 0
 
@@ -33,9 +30,10 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
     //stock information
     let sharePrice = 7.66 //average stock price of GUT over the life of the stock
     let dividendPayout = .05;
-    let monthlyContribution = 500.00;
+    let monthlyContribution = 6000 / 12;
+    let totalDistribution =0;
     //end of stock information
-    let stats = {"Age":{}};
+    let stats = {};
 
     while (monthsInvested < monthsLeftUntillRetirement) {
 
@@ -50,6 +48,7 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
 
         //monthly dividend calculation
         let thisMonthsDividend = (currentShares * dividendPayout);
+        totalDistribution+=thisMonthsDividend;
         let dripShares = (thisMonthsDividend / sharePrice);
 
         let monthlyBoughtShares = (monthlyContribution / sharePrice);
@@ -62,28 +61,34 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
         //month and age calculation
         currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1))
         currentAgeInMonths = monthDifference(birthday, currentDate);
-        if (currentAgeInMonths % 12 === 0) currentAge += 1
+        
+        if (currentAgeInMonths % 12 === 0){
+            currentAge += 1
+        } 
         monthsInvested += 1;
 
-        if ((currentAge in stats["Age"]) === false) {
-            stats["Age"][currentAge] = {}
+        if ((currentAge in stats) === false) {
+            stats[currentAge] = {}
         }
-        if ((currentDate.getFullYear() in stats["Age"][currentAge]) === false) {
-            stats["Age"][currentAge][currentDate.getFullYear()] = {}
-        }
-        stats["Age"][currentAge][currentDate.getFullYear()][getLongMonthName(currentDate.getMonth())] = {
+        stats[currentAge] = {
             "Current Cost Basis" : currentCostBasis.toFixed(2),
             "Current Account Balance": currentAccountBalance.toFixed(2),
             "Current Shares": currentShares.toFixed(3),
-            "Monthly Dividend": (currentShares * dividendPayout).toFixed(2)
-            
+            "Monthly Dividend": (currentShares * dividendPayout).toFixed(2),
+            "Lifetime Distributions": format(totalDistribution.toFixed(2)),
+            "Current Date": currentDate,
+            "Annual Return": ((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)).toFixed(2),
         };
     }
+    
     stats["Final"] =  {
-        "Current Cost Basis" : currentCostBasis.toFixed(2),
-        "Current Account Balance": currentAccountBalance.toFixed(2),
-        "Current Shares": currentShares.toFixed(3),
-        "Monthly Dividend": (currentShares * dividendPayout).toFixed(2)
+        "Current Cost Basis" : "$"+format(currentCostBasis.toFixed(2)),
+        "Current Account Balance": "$"+format(currentAccountBalance.toFixed(2)),
+        "Current Shares": format(currentShares.toFixed(3)),
+        "Monthly Dividend": "$"+format((currentShares * dividendPayout).toFixed(2)),
+        "Average Annual Return": format(((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)/yearsLeftToRetire).toFixed(2)) + " %",
+        "Lifetime Return": format(((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)).toFixed(2)) + " %",
+        "Lifetime Distributions": "$ "+format((totalDistribution).toFixed(2)),
         
     };
     return stats["Final"]
