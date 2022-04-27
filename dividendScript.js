@@ -32,7 +32,7 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
     let dividendPayout = .05;
     let yearlyMax =  6000-currentYearlyContribution;
     let monthlyContribution = 0;
-    let totalDistribution =0;
+    let totalDistribution = 0;
     //end of stock information
     let stats = {};
     while (monthsInvested < monthsLeftUntillRetirement) {
@@ -46,39 +46,27 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
                 dividendPayout = .07
                 yearlyMax = 7000;
             }
-            monthlyContribution=yearlyMax/12
+            monthlyContribution=yearlyMax/12;
         }
         else{
-            let monthsLeft = 12 - (currentDate.getMonth())
+            let monthsLeft = 12 - (currentDate.getMonth());
             monthlyContribution=yearlyMax/monthsLeft;
             yearlyMax-=monthlyContribution;
         }
-        
-        
-
-
         //monthly dividend calculation
         let thisMonthsDividend = (currentShares * dividendPayout);
         totalDistribution+=thisMonthsDividend;
         let dripShares = (thisMonthsDividend / sharePrice);
-
         let monthlyBoughtShares = (monthlyContribution / sharePrice);
-
         currentShares += monthlyBoughtShares + dripShares;
         //account balance calculation
         currentCostBasis += monthlyContribution
         currentAccountBalance += thisMonthsDividend + monthlyContribution
-
         //month and age calculation
-        
-        
         currentAgeInMonths = monthDifference(birthday, currentDate);
         if (currentAgeInMonths % 12 === 0){
             currentAge += 1
         } 
-        
-        
-
         if ((currentAge in stats) === false) {
             stats[currentAge] = {}
         }
@@ -92,7 +80,7 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
             "Annual Return": ((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)).toFixed(2) + " %",
         };
         monthsInvested += 1;
-        currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1))
+        currentDate = new Date(currentDate.setMonth(currentDate.getMonth()+1))
     }
     
     stats["Final"] =  {
@@ -105,6 +93,6 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
         "Lifetime Distributions": "$ "+format((totalDistribution).toFixed(2)),
         
     };
-    return stats
+    return stats["Final"]
 }
 console.log(main(60, "07/26/1993", 3426.837, 22591.49, 23664.71,3664.00))
