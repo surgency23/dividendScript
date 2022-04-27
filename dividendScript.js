@@ -13,7 +13,7 @@ function format (numberStr){
     return numberStr.toString().replace(/(\d)(?=(\d{3})+(?!\d))/g, "$1,");
  };
 
-function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, currentAccountBalance) {
+function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, currentAccountBalance,currentYearlyContribution) {
     //calculating date objects to figure out how many months left to retire, how old we currently are in years and in months
     let today = new Date();
     birthday = new Date(birthday)
@@ -30,21 +30,32 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
     //stock information
     let sharePrice = 7.66 //average stock price of GUT over the life of the stock
     let dividendPayout = .05;
-    let monthlyContribution = 6000 / 12;
+    let yearlyMax =  6000-currentYearlyContribution;
+    let monthlyContribution = 0;
     let totalDistribution =0;
     //end of stock information
     let stats = {};
-
     while (monthsInvested < monthsLeftUntillRetirement) {
-
-        if (currentAge >= 30) {
-            dividendPayout = .06
+        let currentMonth = currentDate.toLocaleString('default', { month: 'long' });
+        if(currentMonth=="January"){
+            yearlyMax=6000;
+            if (currentAge >= 30) {
+                dividendPayout = .06
+            }
+            if (currentAge >= 50) {
+                dividendPayout = .07
+                yearlyMax = 7000;
+            }
+            monthlyContribution=yearlyMax/12
         }
-
-        if (currentAge >= 50) {
-            dividendPayout = .07
-            monthlyContribution = 7000 / 12;
+        else{
+            let monthsLeft = 12 - (currentDate.getMonth())
+            monthlyContribution=yearlyMax/monthsLeft;
+            yearlyMax-=monthlyContribution;
         }
+        
+        
+
 
         //monthly dividend calculation
         let thisMonthsDividend = (currentShares * dividendPayout);
@@ -59,26 +70,29 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
         currentAccountBalance += thisMonthsDividend + monthlyContribution
 
         //month and age calculation
-        currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1))
-        currentAgeInMonths = monthDifference(birthday, currentDate);
         
+        
+        currentAgeInMonths = monthDifference(birthday, currentDate);
         if (currentAgeInMonths % 12 === 0){
             currentAge += 1
         } 
-        monthsInvested += 1;
+        
+        
 
         if ((currentAge in stats) === false) {
             stats[currentAge] = {}
         }
-        stats[currentAge] = {
+        stats[currentAge][currentMonth] = {
             "Current Cost Basis" : currentCostBasis.toFixed(2),
             "Current Account Balance": currentAccountBalance.toFixed(2),
             "Current Shares": currentShares.toFixed(3),
             "Monthly Dividend": (currentShares * dividendPayout).toFixed(2),
             "Lifetime Distributions": format(totalDistribution.toFixed(2)),
             "Current Date": currentDate,
-            "Annual Return": ((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)).toFixed(2),
+            "Annual Return": ((((currentAccountBalance-currentCostBasis + totalDistribution)/currentCostBasis)*100)).toFixed(2) + " %",
         };
+        monthsInvested += 1;
+        currentDate = new Date(currentDate.setMonth(currentDate.getMonth() + 1))
     }
     
     stats["Final"] =  {
@@ -91,6 +105,6 @@ function main(desiredRetirementAge, birthday, currentShares, currentCostBasis, c
         "Lifetime Distributions": "$ "+format((totalDistribution).toFixed(2)),
         
     };
-    return stats["Final"]
+    return stats
 }
-console.log(main(60, "07/26/1993", 2882.212, 19674.88, 21357.19))
+console.log(main(60, "07/26/1993", 3426.837, 22591.49, 23664.71,3664.00))
